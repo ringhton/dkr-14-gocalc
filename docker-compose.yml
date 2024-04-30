@@ -1,0 +1,22 @@
+services:
+  db:
+    image: "postgres:10"
+    environment:
+      POSTGRES_PASSWORD: "DatabasePassword"
+      POSTGRES_USER: "postgres"
+      POSTGRES_DATABASE: "postgres"
+    ports:
+      - "5432:5432"
+  gocalc:
+    build: .
+    depends_on:
+      - db
+    environment:
+      POSTGRES_URI: postgres://postgres:DatabasePassword@db/postgres?sslmode=disable
+      LISTEN_ADDRESS: :7000
+  nginx:
+    image: "nginx"
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/nginx.conf
+    ports:
+      - "80:8080"
