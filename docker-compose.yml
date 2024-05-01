@@ -7,16 +7,37 @@ services:
       POSTGRES_DATABASE: "postgres"
     ports:
       - "5432:5432"
+    networks:
+      - net_db_go
   gocalc:
     build: .
+    restart: unless-stopped
     depends_on:
       - db
     environment:
       POSTGRES_URI: postgres://postgres:DatabasePassword@db/postgres?sslmode=disable
       LISTEN_ADDRESS: :7000
+    networks:
+      - net_go_nginx
+      - net_db_go
   nginx:
     image: "nginx"
+    cap_drop:
+      - ALL
+    cap_add:
+# иначе не отрабатывает
+      - ALL
+#      - CHOWN
+#      - NET_RAW
+#      - AUDIT_WRITE
     volumes:
       - ./nginx.conf:/etc/nginx/conf.d/nginx.conf
     ports:
       - "80:8080"
+    depends_on:
+      - gocalc
+    networks:
+      - net_go_nginx
+networks:
+  net_db_go:
+  net_go_nginx:
